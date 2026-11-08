@@ -6,7 +6,8 @@ Reusable GitHub Actions workflows. Every repo runs the same three stages, lintin
 
 - **Templates** live here, one per stage and stack, each a single job called with `workflow_call`.
 - **Stage files** live in each repo: `linting.yml`, `testing.yml` and `versioning.yml`, plus any extra stages such as `building.yml`. Each calls the templates for the stacks that repo holds.
-- **A gate job** ends each stage file and is named after the stage. It is the required check, so the checks on `main` stay `linting`, `testing` and `versioning` whatever stacks a repo holds. Skipped jobs pass the gate; failed or cancelled ones don't.
+- **A gate job** ends each pull request stage file and is named after the stage. It is the required check, so the checks on `main` stay `linting` and `testing` whatever stacks a repo holds. Skipped jobs pass the gate; failed or cancelled ones don't.
+- **Versioning** runs on pushes to `main` only. It checks nothing on a pull request, so it isn't a required check and needs no gate.
 
 ## Naming
 
@@ -57,12 +58,18 @@ jobs:
         run: exit 1
 ```
 
-`versioning.yml` runs on pull requests too, so the required `versioning` check reports there, and grants what the template needs:
+`versioning.yml` runs on pushes to `main` only and grants what the template needs:
 
 ```yaml
+# .github/workflows/versioning.yml
+name: Versioning
+
+on:
+  push:
+    branches: [main]
+
 jobs:
   common:
-    if: github.event_name == 'push'
     uses: tonylea/ci-templates/.github/workflows/versioning-common.yml@v1.0.0
     permissions:
       contents: write

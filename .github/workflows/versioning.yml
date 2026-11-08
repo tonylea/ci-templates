@@ -1,26 +1,13 @@
 name: Versioning
 
-# versioning is a required check on main, so pull requests must report it too.
 on:
-  pull_request:
   push:
     branches: [main]
 
 jobs:
   common:
-    if: github.event_name == 'push'
     uses: ./.github/workflows/versioning-common.yml
     permissions:
       contents: write
     secrets:
       release-deploy-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
-
-  # The required check. Skipped jobs pass; failed or cancelled ones don't.
-  versioning:
-    needs: [common]
-    if: always()
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Every versioning job passed
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-        run: exit 1
