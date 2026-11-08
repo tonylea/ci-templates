@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.1](https://github.com/tonylea/ci-templates/compare/v1.1.0...v1.1.1) (2026-11-08)
+
+### Bug Fixes
+
+* install collections without ansible-core's Galaxy response cache, which fails at random ([d565b99](https://github.com/tonylea/ci-templates/commit/d565b99529d791dcd56825a1d3487fb6cc96a233))
+
 ## [1.1.0](https://github.com/tonylea/ci-templates/compare/v1.0.0...v1.1.0) (2026-11-08)
 
 ### Features
