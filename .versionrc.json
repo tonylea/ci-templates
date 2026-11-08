@@ -1,0 +1,16 @@
+{
+  "types": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "docs", "section": "Documentation" },
+    { "type": "build", "hidden": true },
+    { "type": "chore", "hidden": true },
+    { "type": "ci", "hidden": true },
+    { "type": "perf", "hidden": true },
+    { "type": "refactor", "hidden": true },
+    { "type": "revert", "hidden": true },
+    { "type": "style", "hidden": true },
+    { "type": "test", "hidden": true }
+  ],
+  "releaseCommitMessageFormat": "chore(release): {{currentTag}} [skip ci]"
+}

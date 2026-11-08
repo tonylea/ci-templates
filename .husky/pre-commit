@@ -1,0 +1,3 @@
+npx markdownlint-cli2
+npx cspell lint "**"
+npx secretlint "**/*"
