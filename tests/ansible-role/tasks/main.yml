@@ -1,0 +1,7 @@
+- name: Write the test file
+  ansible.builtin.copy:
+    content: "{{ ci_templates_fixture_message }}\n"
+    dest: /etc/ci-templates-fixture
+    owner: root
+    group: root
+    mode: "0644"

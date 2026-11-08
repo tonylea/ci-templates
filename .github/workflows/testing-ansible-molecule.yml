@@ -1,0 +1,35 @@
+name: Testing (Ansible, Molecule)
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory holding the role, its molecule/ scenarios and requirements-test.txt.
+        type: string
+        default: "."
+      runs-on:
+        description: Runner to test on; ARM by default, matching the Raspberry Pis.
+        type: string
+        default: ubuntu-24.04-arm
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: ${{ inputs.working-directory }}/requirements-test.txt
+
+      - run: pip install -r requirements-test.txt
+
+      - run: molecule test
