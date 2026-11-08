@@ -32,4 +32,8 @@ jobs:
 
       - run: pip install -r requirements-test.txt
 
+      # Molecule's containers share the runner's kernel and see its swap; the nodes run without any.
+      - name: Turn the runner's swap off
+        run: sudo swapoff --all
+
       - run: molecule test

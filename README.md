@@ -25,7 +25,7 @@ GitHub only finds reusable workflows directly in `.github/workflows/`, so the na
 | --- | --- | --- |
 | `linting-common.yml` | Commit messages, workflows (actionlint), Markdown, spelling, secrets. Pull requests only. | none |
 | `linting-ansible.yml` | ansible-lint, installing collections from `requirements.yml` if there is one | `working-directory` |
-| `testing-ansible-molecule.yml` | `molecule test` | `working-directory`, `runs-on` (ARM by default) |
+| `testing-ansible-molecule.yml` | Turns the runner's swap off, as on the nodes, then `molecule test` | `working-directory`, `runs-on` (ARM by default) |
 | `versioning-common.yml` | commit-and-tag-version, then pushes the release commit and tag and creates the GitHub release. Pushes to `main` only. | secret `release-deploy-key` |
 
 The tools come from each repo's own `package.json` and `requirements-*.txt`, the same versions its local hooks use. A repo names the files to bump in its `.versionrc.json`.
