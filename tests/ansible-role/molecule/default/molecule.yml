@@ -1,0 +1,14 @@
+driver:
+  name: docker
+
+platforms:
+  - name: debian-trixie
+    image: debian:trixie-20261104
+    dockerfile: Dockerfile.j2
+    pre_build_image: false
+
+provisioner:
+  name: ansible
+
+verifier:
+  name: ansible

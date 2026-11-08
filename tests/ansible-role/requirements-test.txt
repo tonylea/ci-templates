@@ -1,0 +1,3 @@
+ansible-core==2.20.11
+molecule==26.11.0
+molecule-plugins[docker]==26.11.0

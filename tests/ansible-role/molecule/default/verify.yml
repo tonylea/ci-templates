@@ -1,0 +1,11 @@
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Read the test file
+      ansible.builtin.slurp:
+        src: /etc/ci-templates-fixture
+      register: fixture_file
+
+    - name: The role wrote its message
+      ansible.builtin.assert:
+        that: (fixture_file.content | b64decode) == "Written by the ci-templates test role\n"
