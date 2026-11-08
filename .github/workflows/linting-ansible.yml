@@ -28,8 +28,9 @@ jobs:
 
       - run: pip install -r requirements-lint.txt
 
+      # ansible-core's Galaxy response cache can hand back an entry it never filled (KeyError: 'results').
       - name: Collections
         if: hashFiles(format('{0}/requirements.yml', inputs.working-directory)) != ''
-        run: ansible-galaxy collection install -r requirements.yml
+        run: ansible-galaxy collection install --no-cache -r requirements.yml
 
       - run: ansible-lint

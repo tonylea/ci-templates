@@ -32,6 +32,11 @@ jobs:
 
       - run: pip install -r requirements-test.txt
 
+      # Installed here, without ansible-core's faulty Galaxy response cache, so Molecule finds them already present.
+      - name: Collections
+        if: hashFiles(format('{0}/requirements.yml', inputs.working-directory)) != ''
+        run: ansible-galaxy collection install --no-cache -r requirements.yml
+
       # Molecule's containers share the runner's kernel and see its swap; the nodes run without any.
       - name: Turn the runner's swap off
         run: sudo swapoff --all
