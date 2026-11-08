@@ -1,0 +1,23 @@
+name: Linting
+
+on:
+  pull_request:
+
+jobs:
+  common:
+    uses: ./.github/workflows/linting-common.yml
+
+  ansible:
+    uses: ./.github/workflows/linting-ansible.yml
+    with:
+      working-directory: tests/ansible-role
+
+  # The required check. Skipped jobs pass; failed or cancelled ones don't.
+  linting:
+    needs: [common, ansible]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Every linting job passed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
