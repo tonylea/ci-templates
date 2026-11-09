@@ -1,0 +1,36 @@
+name: Changes (Ansible role)
+
+# Tells a role's stage files whether a pull request touched anything its Ansible lint and tests depend on.
+on:
+  workflow_call:
+    outputs:
+      role:
+        description: "'true' when the role's code, tests or CI changed."
+        value: ${{ jobs.detect.outputs.role }}
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-24.04
+    outputs:
+      role: ${{ steps.diff.outputs.role }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # Ansible's standard role folders, whether or not a role has them, plus what its lint and tests depend on.
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git diff --quiet "$BASE...$HEAD" -- \
+            tasks handlers defaults vars files templates meta library module_utils filter_plugins lookup_plugins \
+            molecule requirements.yml requirements-lint.txt requirements-test.txt .ansible-lint .github/workflows; then
+            echo "role=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "role=true" >> "$GITHUB_OUTPUT"
+          fi
