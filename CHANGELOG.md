@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.0](https://github.com/tonylea/ci-templates/compare/v1.1.1...v1.2.0) (2026-11-09)
+
+### Features
+
+* report whether a pull request touched an Ansible role's code, tests or CI ([40067e9](https://github.com/tonylea/ci-templates/commit/40067e9ad11308f83f07d95d79adbbe818b355eb))
+
+### Documentation
+
+* add a contributing guide ([1f702ff](https://github.com/tonylea/ci-templates/commit/1f702ff0ddc4856e56bb914d9a23c87e084b3567))
+* put each sentence of the README on its own line ([f3679f1](https://github.com/tonylea/ci-templates/commit/f3679f1dbe631dd01464a46808c74803ee0e5e77))
+
 ## [1.1.1](https://github.com/tonylea/ci-templates/compare/v1.1.0...v1.1.1) (2026-11-08)
 
 ### Bug Fixes
