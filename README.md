@@ -32,6 +32,7 @@ Stage files have no stack: `linting.yml`, `testing.yml`, `versioning.yml`.
 | `linting-common.yml` | Commit messages, workflows (actionlint), Markdown, spelling, secrets. Pull requests only. | none |
 | `linting-ansible.yml` | ansible-lint, installing collections from `requirements.yml` if there is one | `working-directory` |
 | `testing-ansible-molecule.yml` | Turns the runner's swap off, as on the nodes, then `molecule test` | `working-directory`, `runs-on` (ARM by default) |
+| `changes-ansible-role.yml` | Reports (output `role`) whether a pull request touched Ansible's standard role folders, `molecule/`, the requirements files, `.ansible-lint` or the workflows. Not a stage: a role's stage files run their Ansible jobs only when it's `'true'`. | none |
 | `versioning-common.yml` | commit-and-tag-version, then pushes the release commit and tag and creates the GitHub release. Pushes to `main` only. | secret `release-deploy-key` |
 
 The tools come from each repo's own `package.json` and `requirements-*.txt`, the same versions its local hooks use.
@@ -49,14 +50,19 @@ on:
   pull_request:
 
 jobs:
+  changes:
+    uses: tonylea/ci-templates/.github/workflows/changes-ansible-role.yml@v1.2.0
+
   common:
-    uses: tonylea/ci-templates/.github/workflows/linting-common.yml@v1.0.0
+    uses: tonylea/ci-templates/.github/workflows/linting-common.yml@v1.2.0
 
   ansible:
-    uses: tonylea/ci-templates/.github/workflows/linting-ansible.yml@v1.0.0
+    needs: [changes]
+    if: needs.changes.outputs.role == 'true'
+    uses: tonylea/ci-templates/.github/workflows/linting-ansible.yml@v1.2.0
 
   linting:
-    needs: [common, ansible]
+    needs: [changes, common, ansible]
     if: always()
     runs-on: ubuntu-24.04
     steps:
@@ -77,7 +83,7 @@ on:
 
 jobs:
   common:
-    uses: tonylea/ci-templates/.github/workflows/versioning-common.yml@v1.0.0
+    uses: tonylea/ci-templates/.github/workflows/versioning-common.yml@v1.2.0
     permissions:
       contents: write
     secrets:
