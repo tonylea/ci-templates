@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.0](https://github.com/tonylea/ci-templates/compare/v1.2.0...v1.3.0) (2026-11-12)
+
+### Features
+
+* lint, test and publish Helm charts ([41056fa](https://github.com/tonylea/ci-templates/commit/41056fa6de757bffd22772599b512b4f8c138571))
+* report the version versioning-common released as its output ([3fc3beb](https://github.com/tonylea/ci-templates/commit/3fc3beb7299b8bf8ab5170e1b8728f074164d0d7))
+
+### Documentation
+
+* describe the Helm templates and how a chart repo publishes ([4608b01](https://github.com/tonylea/ci-templates/commit/4608b01f797fc8ee7f9491aafa6be9b847de3ae3))
+
 ## [1.2.0](https://github.com/tonylea/ci-templates/compare/v1.1.1...v1.2.0) (2026-11-09)
 
 ### Features
