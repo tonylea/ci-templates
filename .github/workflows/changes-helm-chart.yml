@@ -1,0 +1,39 @@
+name: Changes (Helm chart)
+
+# Tells a chart's stage files whether a pull request touched anything its Helm lint and tests depend on.
+on:
+  workflow_call:
+    outputs:
+      chart:
+        description: "'true' when the chart, its tests or CI changed."
+        value: ${{ jobs.detect.outputs.chart }}
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-24.04
+    outputs:
+      chart: ${{ steps.diff.outputs.chart }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # A chart can read any file in it (.Files.Get), so everything counts except docs and the repo's own tooling.
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git diff --quiet "$BASE...$HEAD" -- . \
+            ':(exclude)*.md' ':(exclude)LICENSE' \
+            ':(exclude).github/ISSUE_TEMPLATE' ':(exclude).github/dependabot.yml' ':(exclude).husky' \
+            ':(exclude).commitlintrc.json' ':(exclude).cspell.json' ':(exclude).markdownlint-cli2.jsonc' \
+            ':(exclude).secretlintrc.json' ':(exclude).gitignore' ':(exclude).versionrc.json' \
+            ':(exclude)package.json' ':(exclude)package-lock.json'; then
+            echo "chart=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "chart=true" >> "$GITHUB_OUTPUT"
+          fi

@@ -1,0 +1,42 @@
+name: Testing (Helm, unittest)
+
+# helm-unittest's assertions on what the chart renders, from the chart's tests/*_test.yaml.
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory holding the chart and its tests/.
+        type: string
+        default: "."
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Helm
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -sSfL -o "$RUNNER_TEMP/helm.tar.gz" https://get.helm.sh/helm-v4.3.1-linux-amd64.tar.gz
+          echo "0403a88ae20913d11b10a2467b50087721fea7581736da6b9d3992f5357fe54b  $RUNNER_TEMP/helm.tar.gz" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/helm.tar.gz" -C "$RUNNER_TEMP/bin" --strip-components=1 linux-amd64/helm
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      # The release's plugin package carries every platform's binary, so its install hook is skipped.
+      # Installed from a checked local directory, which Helm 4 doesn't ask to verify by signature.
+      - name: helm-unittest
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/unittest.tgz" https://github.com/helm-unittest/helm-unittest/releases/download/v1.2.1/unittest-1.2.1.tgz
+          echo "bbcebd42631dff9fc595462fad839c49a1b06f9635e952e7e837d7e5fe82865f  $RUNNER_TEMP/unittest.tgz" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/unittest.tgz" -C "$RUNNER_TEMP"
+          SKIP_BIN_INSTALL=1 helm plugin install "$RUNNER_TEMP/unittest"
+
+      - run: helm unittest --strict .

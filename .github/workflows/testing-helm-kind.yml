@@ -1,0 +1,66 @@
+name: Testing (Helm, kind)
+
+# Installs the chart into a kind cluster with chart-testing, upgrading it from the pull request's base and in place.
+# First applies the chart's setup kustomization into the namespace ct, for what the chart expects to exist already (CRDs, Secrets).
+# Call it on pull requests only; it upgrades from the pull request's base branch.
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory holding the chart, from the repo's root.
+        type: string
+        default: "."
+      setup-path:
+        description: Kustomization applied before installing, from the chart's directory; skipped if it doesn't exist.
+        type: string
+        default: ci/kind
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04-arm
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Helm
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -sSfL -o "$RUNNER_TEMP/helm.tar.gz" https://get.helm.sh/helm-v4.3.1-linux-arm64.tar.gz
+          echo "8cf8f66ecbc252ac8f7f06cca68aba88508ddfde3a6a34feb1678ad1694b4f88  $RUNNER_TEMP/helm.tar.gz" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/helm.tar.gz" -C "$RUNNER_TEMP/bin" --strip-components=1 linux-arm64/helm
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: chart-testing
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/ct.tar.gz" https://github.com/helm/chart-testing/releases/download/v3.15.0/chart-testing_3.15.0_linux_arm64.tar.gz
+          echo "732d3187e8d7f9c72ab6775f4ebc374562e384e50f94fc0b2844c002e8bad5e5  $RUNNER_TEMP/ct.tar.gz" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/ct.tar.gz" -C "$RUNNER_TEMP/bin" ct
+
+      - uses: helm/kind-action@ea822c7bf1874f08e5a491df991c228edffc3376 # v1.15.2
+        with:
+          version: v0.33.0
+          node_image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+
+      - name: Setup
+        env:
+          SETUP: ${{ inputs.working-directory }}/${{ inputs.setup-path }}
+        run: |
+          kubectl create namespace ct
+          if [ -d "$SETUP" ]; then
+            kubectl apply --kustomize "$SETUP" --namespace ct
+            kubectl wait --for condition=established crd --all --timeout 60s
+          fi
+
+      # Run from the repo's root, so chart-testing finds the chart's previous revision on the base branch.
+      - name: Install and upgrade
+        env:
+          CHART: ${{ inputs.working-directory }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: ct install --charts "$CHART" --namespace ct --upgrade --target-branch "$BASE"
