@@ -8,12 +8,18 @@ on:
       release-deploy-key:
         description: The repo's release deploy key, the only key allowed to push past main's rules.
         required: true
+    outputs:
+      version:
+        description: The tag released, such as v1.2.0, or empty when nothing was released.
+        value: ${{ jobs.release.outputs.version }}
 
 jobs:
   release:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+    outputs:
+      version: ${{ steps.release.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
