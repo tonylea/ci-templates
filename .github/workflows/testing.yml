@@ -9,9 +9,19 @@ jobs:
     with:
       working-directory: tests/ansible-role
 
+  helm-unittest:
+    uses: ./.github/workflows/testing-helm-unittest.yml
+    with:
+      working-directory: tests/helm-chart
+
+  helm-kind:
+    uses: ./.github/workflows/testing-helm-kind.yml
+    with:
+      working-directory: tests/helm-chart
+
   # The required check. Skipped jobs pass; failed or cancelled ones don't.
   testing:
-    needs: [ansible-molecule]
+    needs: [ansible-molecule, helm-unittest, helm-kind]
     if: always()
     runs-on: ubuntu-24.04
     steps:

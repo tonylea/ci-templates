@@ -1,0 +1,6 @@
+apiVersion: v2
+name: test-chart
+description: A chart for this repo's Helm templates to lint, test and install
+type: application
+version: 0.1.0
+appVersion: "3.10.2"

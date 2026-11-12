@@ -12,8 +12,19 @@
     "package-lock.json"
   ],
   "words": [
+    "coreos",
+    "CRDs",
+    "datreeio",
+    "kindest",
+    "kubeconform",
+    "kustomization",
+    "kustomize",
+    "nullglob",
+    "servicemonitor",
+    "servicemonitors",
     "tonylea",
     "trixie",
+    "unittest",
     "versionrc"
   ]
 }

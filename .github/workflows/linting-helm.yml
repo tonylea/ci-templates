@@ -1,0 +1,62 @@
+name: Linting (Helm)
+
+# helm lint, then every rendered object checked against the cluster's Kubernetes API by kubeconform.
+# Runs once per ci/*-values.yaml, the files chart-testing installs with, or once with the chart's defaults if there are none.
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory holding the chart.
+        type: string
+        default: "."
+      kubernetes-version:
+        description: Kubernetes version the rendered objects are checked against.
+        type: string
+        default: "1.37.2"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Helm
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -sSfL -o "$RUNNER_TEMP/helm.tar.gz" https://get.helm.sh/helm-v4.3.1-linux-amd64.tar.gz
+          echo "0403a88ae20913d11b10a2467b50087721fea7581736da6b9d3992f5357fe54b  $RUNNER_TEMP/helm.tar.gz" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/helm.tar.gz" -C "$RUNNER_TEMP/bin" --strip-components=1 linux-amd64/helm
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: kubeconform
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/kubeconform.tar.gz" https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz
+          echo "9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883  $RUNNER_TEMP/kubeconform.tar.gz" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/kubeconform.tar.gz" -C "$RUNNER_TEMP/bin" kubeconform
+
+      # Custom resources are checked against datreeio/CRDs-catalog, pinned to a commit.
+      - name: Lint and validate
+        env:
+          KUBERNETES_VERSION: ${{ inputs.kubernetes-version }}
+          CRD_SCHEMAS: https://raw.githubusercontent.com/datreeio/CRDs-catalog/89c736bdde38b5fecd0f8436ec5f3aa3679a3b86/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json
+        run: |
+          shopt -s nullglob
+          values_files=(ci/*-values.yaml)
+          [ ${#values_files[@]} -gt 0 ] || values_files=("")
+          for values in "${values_files[@]}"; do
+            args=()
+            [ -z "$values" ] || args=(--values "$values")
+            echo "::group::${values:-Default values}"
+            helm lint --strict . "${args[@]}"
+            helm template . "${args[@]}" \
+              | kubeconform -strict -summary -kubernetes-version "$KUBERNETES_VERSION" \
+                -schema-location default -schema-location "$CRD_SCHEMAS"
+            echo "::endgroup::"
+          done

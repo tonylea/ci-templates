@@ -1,0 +1,11 @@
+suite: ServiceMonitor
+templates:
+  - templates/servicemonitor.yaml
+tests:
+  - it: scrapes the Service's metrics port
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - equal:
+          path: spec.endpoints[0].port
+          value: metrics

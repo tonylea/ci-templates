@@ -1,0 +1,80 @@
+name: Versioning (Helm)
+
+# Publishes a chart release: packages it, attaches it to the GitHub release, and adds it to the Helm repository on the repo's GitHub Pages.
+# Call it after versioning-common.yml, only when that released a version, passing its version output.
+# The caller must grant contents: write, pages: write and id-token: write, and the repo's Pages must deploy from GitHub Actions.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: The tag released, such as v1.2.0.
+        type: string
+        required: true
+      working-directory:
+        description: Directory holding the chart.
+        type: string
+        default: "."
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.version }}
+
+      - name: Helm
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -sSfL -o "$RUNNER_TEMP/helm.tar.gz" https://get.helm.sh/helm-v4.3.1-linux-amd64.tar.gz
+          echo "0403a88ae20913d11b10a2467b50087721fea7581736da6b9d3992f5357fe54b  $RUNNER_TEMP/helm.tar.gz" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/helm.tar.gz" -C "$RUNNER_TEMP/bin" --strip-components=1 linux-amd64/helm
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      # The package is named from Chart.yaml, so a version that differs from the tag finds no file and stops here.
+      - name: Package and attach to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          helm package . --destination "$RUNNER_TEMP/dist"
+          name="$(helm show chart . | sed -n 's/^name: //p')"
+          gh release upload "$VERSION" "$RUNNER_TEMP/dist/$name-${VERSION#v}.tgz" --repo "$GITHUB_REPOSITORY"
+
+      # Merged into the live index, so earlier versions stay listed; only the first release may start a new one.
+      - name: Index
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          pages="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}"
+          merge=()
+          if curl -sSfL -o "$RUNNER_TEMP/live-index.yaml" "$pages/index.yaml"; then
+            merge=(--merge "$RUNNER_TEMP/live-index.yaml")
+          elif [ "$(gh release list --repo "$GITHUB_REPOSITORY" --json tagName --jq length)" = 1 ]; then
+            echo "No index on Pages and this is the first release: starting one."
+          else
+            echo "::error::Couldn't fetch $pages/index.yaml; publishing without it would drop every earlier version."
+            exit 1
+          fi
+          helm repo index "$RUNNER_TEMP/dist" --url "https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION" "${merge[@]}"
+          mkdir "$RUNNER_TEMP/site"
+          cp "$RUNNER_TEMP/dist/index.yaml" "$RUNNER_TEMP/site/"
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ${{ runner.temp }}/site
+
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
