@@ -12,9 +12,14 @@ jobs:
     with:
       working-directory: tests/ansible-role
 
+  helm:
+    uses: ./.github/workflows/linting-helm.yml
+    with:
+      working-directory: tests/helm-chart
+
   # The required check. Skipped jobs pass; failed or cancelled ones don't.
   linting:
-    needs: [common, ansible]
+    needs: [common, ansible, helm]
     if: always()
     runs-on: ubuntu-24.04
     steps:
