@@ -55,7 +55,10 @@ jobs:
           kubectl create namespace ct
           if [ -d "$SETUP" ]; then
             kubectl apply --kustomize "$SETUP" --namespace ct
-            kubectl wait --for condition=established crd --all --timeout 60s
+            # kind has no CRDs of its own, so any here came from the setup; waiting on none fails.
+            if [ -n "$(kubectl get crd --output name)" ]; then
+              kubectl wait --for condition=established crd --all --timeout 60s
+            fi
           fi
 
       # Run from the repo's root, so chart-testing finds the chart's previous revision on the base branch.
