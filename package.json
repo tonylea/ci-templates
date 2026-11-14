@@ -1,6 +1,6 @@
 {
   "name": "ci-templates",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Reusable GitHub Actions workflows for linting, testing and versioning",
   "private": true,
   "repository": {

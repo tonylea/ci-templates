@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.1](https://github.com/tonylea/ci-templates/compare/v1.3.0...v1.3.1) (2026-11-14)
+
+### Bug Fixes
+
+* wait for CRDs in the kind setup only when it applies some ([00c34a3](https://github.com/tonylea/ci-templates/commit/00c34a337d9d109652a89e457d49d81c996eda3d))
+
 ## [1.3.0](https://github.com/tonylea/ci-templates/compare/v1.2.0...v1.3.0) (2026-11-12)
 
 ### Features
