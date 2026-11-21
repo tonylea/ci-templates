@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.4](https://github.com/tonylea/ci-templates/compare/v1.3.3...v1.3.4) (2026-11-21)
+
+### Bug Fixes
+
+* test a chart with a fresh kind install only, so a deliberate breaking change can pass ([141fa92](https://github.com/tonylea/ci-templates/commit/141fa92cd620e3482b91e77f5e381f0b228b188c))
+
 ## [1.3.3](https://github.com/tonylea/ci-templates/compare/v1.3.2...v1.3.3) (2026-11-21)
 
 ### Bug Fixes
