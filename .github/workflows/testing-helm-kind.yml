@@ -1,8 +1,7 @@
 name: Testing (Helm, kind)
 
-# Installs the chart into a kind cluster with chart-testing, upgrading it from the pull request's base and in place.
+# Installs the chart into a kind cluster with chart-testing.
 # First applies the chart's setup kustomization into the namespace ct, for what the chart expects to exist already (CRDs, Secrets).
-# Call it on pull requests only; it upgrades from the pull request's base branch.
 on:
   workflow_call:
     inputs:
@@ -26,8 +25,6 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
 
       - name: Helm
         run: |
@@ -61,9 +58,7 @@ jobs:
             fi
           fi
 
-      # Run from the repo's root, so chart-testing finds the chart's previous revision on the base branch.
-      - name: Install and upgrade
+      - name: Install
         env:
           CHART: ${{ inputs.working-directory }}
-          BASE: ${{ github.event.pull_request.base.ref }}
-        run: ct install --charts "$CHART" --namespace ct --upgrade --target-branch "$BASE"
+        run: ct install --charts "$CHART" --namespace ct
