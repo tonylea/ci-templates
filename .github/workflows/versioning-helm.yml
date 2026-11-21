@@ -50,7 +50,6 @@ jobs:
         run: |
           helm package . --destination "$RUNNER_TEMP/dist"
           name="$(helm show chart . | sed -n 's/^name: //p')"
-          # --clobber: a re-run after a failed deploy finds the package it attached before.
           gh release upload "$VERSION" "$RUNNER_TEMP/dist/$name-${VERSION#v}.tgz" --repo "$GITHUB_REPOSITORY" --clobber
 
       # Merged into the live index, so earlier versions stay listed; only the first release may start a new one.
