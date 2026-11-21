@@ -50,7 +50,7 @@ jobs:
         run: |
           helm package . --destination "$RUNNER_TEMP/dist"
           name="$(helm show chart . | sed -n 's/^name: //p')"
-          gh release upload "$VERSION" "$RUNNER_TEMP/dist/$name-${VERSION#v}.tgz" --repo "$GITHUB_REPOSITORY"
+          gh release upload "$VERSION" "$RUNNER_TEMP/dist/$name-${VERSION#v}.tgz" --repo "$GITHUB_REPOSITORY" --clobber
 
       # Merged into the live index, so earlier versions stay listed; only the first release may start a new one.
       - name: Index
