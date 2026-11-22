@@ -20,6 +20,6 @@
     "cspell": "10.4.1",
     "husky": "9.1.7",
     "markdownlint-cli2": "0.24.0",
-    "secretlint": "13.1.0"
+    "secretlint": "14.0.1"
   }
 }
